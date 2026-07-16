@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Resource" ADD COLUMN     "avgRating" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "ratingsCount" INTEGER NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "ResourceRequest" ADD COLUMN     "votesCount" INTEGER NOT NULL DEFAULT 0;

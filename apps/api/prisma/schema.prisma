@@ -197,10 +197,17 @@ model Resource {
   fileId         String         @unique
   file           FileObject     @relation(fields: [fileId], references: [id], onDelete: Restrict)
   downloadsCount Int            @default(0)
+  // Denormalized rating aggregates (kept in sync in the rating service) so
+  // listing can sort/filter by rating efficiently without per-row aggregation.
+  avgRating      Float          @default(0)
+  ratingsCount   Int            @default(0)
   moderationNote String?
   deletedAt      DateTime?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+  // Generated tsvector for full-text search (managed by raw SQL migration).
+  // Declared as Unsupported so Prisma tracks it without trying to recreate it.
+  searchVector   Unsupported("tsvector")?
 
   ratings          Rating[]
   comments         Comment[]
@@ -210,6 +217,7 @@ model Resource {
   @@index([status])
   @@index([uploaderId])
   @@index([createdAt])
+  @@index([searchVector], type: Gin)
 }
 
 model ResourceRequest {
@@ -224,6 +232,9 @@ model ResourceRequest {
   requesterId         String
   requester           User          @relation(fields: [requesterId], references: [id], onDelete: Cascade)
   status              RequestStatus @default(OPEN)
+  // Denormalized vote count (kept in sync in the request service) for efficient
+  // "most requested" sorting.
+  votesCount          Int           @default(0)
   fulfilledByResourceId String?     @unique
   fulfilledByResource   Resource?   @relation("RequestFulfillment", fields: [fulfilledByResourceId], references: [id], onDelete: SetNull)
   createdAt           DateTime      @default(now())
