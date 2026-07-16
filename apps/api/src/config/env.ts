@@ -93,7 +93,6 @@ function loadEnv(): Env {
     const issues = parsed.error.issues
       .map((i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)
       .join('\n');
-    // eslint-disable-next-line no-console
     console.error(`\n✖ Invalid environment configuration:\n${issues}\n`);
     process.exit(1);
   }
@@ -103,12 +102,10 @@ function loadEnv(): Env {
   if (value.NODE_ENV === 'production') {
     const weak = [value.JWT_ACCESS_SECRET, value.JWT_REFRESH_SECRET, value.COOKIE_SECRET];
     if (weak.some((s) => /change|secret|example|dev/i.test(s))) {
-      // eslint-disable-next-line no-console
       console.error('✖ Refusing to boot in production with placeholder secrets.');
       process.exit(1);
     }
     if (!value.COOKIE_SECURE) {
-      // eslint-disable-next-line no-console
       console.warn('⚠ COOKIE_SECURE is false in production — cookies will not be Secure.');
     }
   }

@@ -6,9 +6,9 @@ import rateLimit from '@fastify/rate-limit';
 import {
   serializerCompiler,
   validatorCompiler,
-  ZodTypeProvider,
   hasZodFastifySchemaValidationErrors,
 } from 'fastify-type-provider-zod';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { ZodError } from 'zod';
 import { ErrorCode, type ApiErrorBody } from '@studyshare/shared';
 

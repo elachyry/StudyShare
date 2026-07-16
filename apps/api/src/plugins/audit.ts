@@ -20,18 +20,18 @@ declare module 'fastify' {
 export default fp(
   async (app) => {
     app.decorateRequest('audit', function (this: FastifyRequest, action, extra) {
-      const req = this;
       const entry: AuditEntry = {
-        actorId: extra?.actorId ?? req.authUser?.id ?? null,
+        actorId: extra?.actorId ?? this.authUser?.id ?? null,
         action,
         targetType: extra?.targetType ?? null,
         targetId: extra?.targetId ?? null,
         metadata: extra?.metadata ?? null,
-        ip: req.ip,
-        userAgent: req.headers['user-agent'] ?? null,
+        ip: this.ip,
+        userAgent: this.headers['user-agent'] ?? null,
       };
+      const log = this.log;
       return writeAudit(app.prisma, entry).catch((err) => {
-        req.log.error({ err, action }, 'failed to write audit log');
+        log.error({ err, action }, 'failed to write audit log');
       });
     });
   },
