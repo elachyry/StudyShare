@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Semantic design tokens. Palette:
+ *   #0F172A slate-900 (primary/dark bg), #06B6D4 cyan-500 (accent),
+ *   #E2E8F0 slate-200 (light surface).
+ * Colors are stored as space-separated RGB channels so Tailwind's
+ * `<alpha-value>` opacity modifier works (e.g. bg-accent/10).
+ */
+:root {
+  --bg: 241 245 249; /* slate-100 */
+  --surface: 255 255 255; /* white */
+  --surface-2: 226 232 240; /* slate-200 */
+  --text: 15 23 42; /* slate-900 */
+  --muted: 100 116 139; /* slate-500 */
+  --accent: 6 182 212; /* cyan-500 */
+  --accent-fg: 255 255 255;
+  --border: 203 213 225; /* slate-300 */
+  --danger: 220 38 38;
+  --success: 22 163 74;
+  --warning: 202 138 4;
+  color-scheme: light;
+}
+
+:root.dark,
+:root[data-theme='dark'] {
+  --bg: 15 23 42; /* slate-900 */
+  --surface: 30 41 59; /* slate-800 */
+  --surface-2: 51 65 85; /* slate-700 */
+  --text: 226 232 240; /* slate-200 */
+  --muted: 148 163 184; /* slate-400 */
+  --accent: 6 182 212; /* cyan-500 */
+  --accent-fg: 15 23 42;
+  --border: 51 65 85; /* slate-700 */
+  --danger: 248 113 113;
+  --success: 74 222 128;
+  --warning: 250 204 21;
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-bg text-text antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* Consistent, visible focus ring for keyboard users (WCAG AA). */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: rgb(var(--accent) / 0.25);
+}
