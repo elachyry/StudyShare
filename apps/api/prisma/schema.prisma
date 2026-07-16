@@ -1,0 +1,324 @@
+// StudyShare data model.
+// - All ids are cuid(); every table has createdAt/updatedAt.
+// - Soft-delete (deletedAt) on moderated content: User, Resource, Comment.
+// - Indexes on lookups, foreign keys, slugs, and moderation queries.
+// - Full-text search on Resource(title, description) is added via raw SQL in a
+//   migration (a GIN tsvector index) since Prisma has no native FTS type.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  MODERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum ResourceType {
+  LESSON
+  SUMMARY
+  EXERCISE
+}
+
+enum ResourceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RequestStatus {
+  OPEN
+  FULFILLED
+  CLOSED
+}
+
+enum EmailTokenType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+enum ReportTargetType {
+  RESOURCE
+  COMMENT
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationType {
+  REQUEST_FULFILLED
+  RESOURCE_APPROVED
+  RESOURCE_REJECTED
+  NEW_COMMENT
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique // stored lowercased at the application layer
+  passwordHash  String? // null for Google-only accounts
+  name          String
+  avatarUrl     String?
+  role          Role       @default(STUDENT)
+  branchId      String?
+  branch        Branch?    @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  emailVerified Boolean    @default(false)
+  googleId      String?    @unique
+  status        UserStatus @default(ACTIVE)
+  deletedAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  refreshTokens RefreshToken[]
+  emailTokens   EmailToken[]
+  resources     Resource[]
+  files         FileObject[]
+  requests      ResourceRequest[]
+  votes         RequestVote[]
+  ratings       Rating[]
+  comments      Comment[]
+  reports       Report[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+
+  @@index([branchId])
+  @@index([role])
+  @@index([status])
+}
+
+// Refresh tokens are stored hashed. `familyId` groups rotated tokens so reuse of
+// a revoked token can revoke the entire family.
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  familyId  String
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  userAgent String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
+}
+
+model EmailToken {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String         @unique
+  type      EmailTokenType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime       @default(now())
+
+  @@index([userId])
+  @@index([type])
+}
+
+model Branch {
+  id          String    @id @default(cuid())
+  name        String // English
+  nameFr      String
+  slug        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  subjects  Subject[]
+  users     User[]
+  resources Resource[]
+  requests  ResourceRequest[]
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  name      String
+  nameFr    String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resources Resource[]
+  requests  ResourceRequest[]
+
+  @@unique([branchId, slug])
+  @@index([branchId])
+}
+
+model FileObject {
+  id           String   @id @default(cuid())
+  storageKey   String   @unique
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  checksum     String // sha256 hex
+  uploaderId   String
+  uploader     User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  scanned      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  resource Resource?
+
+  @@index([uploaderId])
+  @@index([checksum])
+}
+
+model Resource {
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  type           ResourceType
+  status         ResourceStatus @default(PENDING)
+  branchId       String
+  branch         Branch         @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  subjectId      String
+  subject        Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  uploaderId     String
+  uploader       User           @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  fileId         String         @unique
+  file           FileObject     @relation(fields: [fileId], references: [id], onDelete: Restrict)
+  downloadsCount Int            @default(0)
+  moderationNote String?
+  deletedAt      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  ratings          Rating[]
+  comments         Comment[]
+  fulfilledRequest ResourceRequest? @relation("RequestFulfillment")
+
+  @@index([branchId, subjectId, status])
+  @@index([status])
+  @@index([uploaderId])
+  @@index([createdAt])
+}
+
+model ResourceRequest {
+  id                  String        @id @default(cuid())
+  title               String
+  description         String?
+  type                ResourceType
+  branchId            String
+  branch              Branch        @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  subjectId           String
+  subject             Subject       @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  requesterId         String
+  requester           User          @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  status              RequestStatus @default(OPEN)
+  fulfilledByResourceId String?     @unique
+  fulfilledByResource   Resource?   @relation("RequestFulfillment", fields: [fulfilledByResourceId], references: [id], onDelete: SetNull)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  votes RequestVote[]
+
+  @@index([branchId, subjectId, status])
+  @@index([status])
+  @@index([requesterId])
+}
+
+model RequestVote {
+  id        String          @id @default(cuid())
+  requestId String
+  request   ResourceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+
+  @@unique([requestId, userId])
+  @@index([requestId])
+}
+
+model Rating {
+  id         String   @id @default(cuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value      Int // 1..5
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([resourceId, userId])
+  @@index([resourceId])
+}
+
+model Comment {
+  id         String    @id @default(cuid())
+  resourceId String
+  resource   Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body       String
+  deletedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([resourceId])
+  @@index([userId])
+}
+
+model Report {
+  id         String           @id @default(cuid())
+  targetType ReportTargetType
+  targetId   String
+  reporterId String
+  reporter   User             @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reason     String
+  status     ReportStatus     @default(OPEN)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([status])
+  @@index([targetType, targetId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+}
+
+// Append-only audit trail. Never updated or deleted by the application.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}
