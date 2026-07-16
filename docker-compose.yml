@@ -84,7 +84,11 @@ services:
       target: dev
     restart: unless-stopped
     environment:
+      # The browser (on the host) reaches the published API directly on :4000.
       VITE_API_BASE_URL: http://localhost:4000
+      # The Vite dev-server proxy (used when VITE_API_BASE_URL is unset) targets
+      # the API service over the compose network.
+      VITE_PROXY_TARGET: http://api:4000
     ports:
       - '5173:5173'
     volumes:
