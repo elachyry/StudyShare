@@ -49,5 +49,10 @@ export default tseslint.config(
       'no-console': 'off',
     },
   },
+  {
+    // CLI scripts (seed, one-off tooling) may log freely to stdout.
+    files: ['**/prisma/seed.ts', '**/scripts/**/*.ts'],
+    rules: { 'no-console': 'off' },
+  },
   prettier,
 );
