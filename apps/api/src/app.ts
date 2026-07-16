@@ -25,6 +25,7 @@ import authPlugin from './plugins/auth.js';
 import rbacPlugin from './plugins/rbac.js';
 import csrfPlugin from './plugins/csrf.js';
 import auditPlugin from './plugins/audit.js';
+import multipartPlugin from './plugins/multipart.js';
 import { registerRoutes } from './routes.js';
 import { healthRoutes } from './modules/health/health.routes.js';
 
@@ -96,6 +97,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(authPlugin);
   await app.register(rbacPlugin);
   await app.register(auditPlugin);
+  await app.register(multipartPlugin);
 
   // Central error/not-found handlers. These MUST be registered BEFORE routes:
   // Fastify binds the active error handler to each route at registration time.

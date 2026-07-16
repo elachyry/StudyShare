@@ -1,5 +1,6 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { authRoutes } from './modules/auth/auth.routes.js';
+import { fileRoutes } from './modules/files/files.routes.js';
 
 /**
  * Registers all feature routes under the `/api` prefix. Each module owns its own
@@ -7,4 +8,5 @@ import { authRoutes } from './modules/auth/auth.routes.js';
  */
 export const registerRoutes: FastifyPluginAsyncZod = async (app) => {
   await app.register(authRoutes, { prefix: '/auth' });
+  await app.register(fileRoutes, { prefix: '/files' });
 };
