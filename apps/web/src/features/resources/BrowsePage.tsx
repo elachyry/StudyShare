@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Search, SlidersHorizontal, FileQuestion } from 'lucide-react';
@@ -12,8 +13,19 @@ const TYPES: ResourceType[] = ['LESSON', 'SUMMARY', 'EXERCISE'];
 
 export function BrowsePage() {
   const { t, i18n } = useTranslation();
-  const [filters, setFilters] = useState<Partial<ListResourcesQuery>>({ sort: 'newest' });
-  const [searchInput, setSearchInput] = useState('');
+  const [params] = useSearchParams();
+  const urlQ = params.get('q') ?? '';
+  const [filters, setFilters] = useState<Partial<ListResourcesQuery>>({
+    sort: 'newest',
+    q: urlQ || undefined,
+  });
+  const [searchInput, setSearchInput] = useState(urlQ);
+
+  // Sync when the global top-bar search changes the URL query.
+  useEffect(() => {
+    setSearchInput(urlQ);
+    setFilters((f) => ({ ...f, q: urlQ || undefined }));
+  }, [urlQ]);
 
   const branches = useBranches();
   const subjects = useSubjects(filters.branchId);

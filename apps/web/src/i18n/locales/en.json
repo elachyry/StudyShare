@@ -37,6 +37,15 @@
     "optional": "optional",
     "required": "required"
   },
+  "sidebar": { "study": "Study", "manage": "Manage" },
+  "topbar": { "search": "Search resources, requests…", "add": "Add" },
+  "authAside": {
+    "headline": "Welcome!",
+    "subtitle": "Your hub to share and discover academic resources.",
+    "featureShare": "Share lessons, summaries & exercises",
+    "featureRequest": "Request what you can't find",
+    "featureLearn": "Learn together, by branch & subject"
+  },
   "theme": { "light": "Light", "dark": "Dark", "toggle": "Toggle theme" },
   "language": { "label": "Language", "en": "English", "fr": "French" },
   "auth": {

@@ -10,32 +10,32 @@
  * `<alpha-value>` opacity modifier works (e.g. bg-accent/10).
  */
 :root {
-  --bg: 246 247 251; /* #F6F7FB */
-  --surface: 255 255 255; /* white */
-  --surface-2: 236 238 247; /* #ECEEF7 violet-tinted */
-  --text: 26 27 58; /* #1A1B3A ink */
-  --muted: 99 102 138; /* #63668A */
-  --accent: 66 87 178; /* #4257B2 violet-blue */
-  --accent-2: 60 207 207; /* #3CCFCF turquoise */
+  --bg: 238 241 245; /* #EEF1F5 gray-blue app background */
+  --surface: 255 255 255; /* white cards */
+  --surface-2: 243 245 248; /* #F3F5F8 */
+  --text: 15 23 41; /* #0F1729 near-black navy */
+  --muted: 100 116 139; /* #64748B */
+  --accent: 59 130 246; /* #3B82F6 Studydrive-style blue */
+  --accent-2: 34 197 94; /* #22C55E green (progress/success accents) */
   --accent-fg: 255 255 255;
-  --border: 224 226 240; /* #E0E2F0 */
+  --border: 226 232 240; /* #E2E8F0 */
   --danger: 220 38 38;
-  --success: 22 163 74;
-  --warning: 202 138 4;
+  --success: 34 197 94;
+  --warning: 217 119 6;
   color-scheme: light;
 }
 
 :root.dark,
 :root[data-theme='dark'] {
-  --bg: 20 21 43; /* #14152B deep indigo-navy */
-  --surface: 30 31 61; /* #1E1F3D */
-  --surface-2: 42 43 82; /* #2A2B52 */
-  --text: 231 232 245; /* #E7E8F5 */
-  --muted: 154 156 192; /* #9A9CC0 */
-  --accent: 108 124 224; /* #6C7CE0 brighter violet-blue for contrast */
-  --accent-2: 60 207 207; /* #3CCFCF turquoise */
-  --accent-fg: 255 255 255;
-  --border: 51 53 106; /* #33356A */
+  --bg: 15 20 33; /* #0F1421 deep navy */
+  --surface: 24 30 46; /* #181E2E */
+  --surface-2: 34 42 61; /* #222A3D */
+  --text: 226 232 240; /* #E2E8F0 */
+  --muted: 148 163 184; /* #94A3B8 */
+  --accent: 96 165 250; /* #60A5FA brighter blue for contrast */
+  --accent-2: 74 222 128; /* #4ADE80 green */
+  --accent-fg: 15 23 41;
+  --border: 42 51 71; /* #2A3347 */
   --danger: 248 113 113;
   --success: 74 222 128;
   --warning: 250 204 21;
@@ -53,13 +53,20 @@ body {
   font-feature-settings: 'cv11', 'ss01';
 }
 
-/* Headings use Poppins for a friendly, bold study-app feel. */
+/* Headings use Poppins, heavy and near-black, for a bold study-app feel. */
 @layer base {
   h1,
   h2,
   h3 {
     font-family: 'Poppins', 'Inter', system-ui, sans-serif;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+  }
+  h1 {
+    font-weight: 800;
+  }
+  h2,
+  h3 {
+    font-weight: 700;
   }
 }
 

@@ -37,6 +37,15 @@
     "optional": "facultatif",
     "required": "requis"
   },
+  "sidebar": { "study": "Étudier", "manage": "Gérer" },
+  "topbar": { "search": "Rechercher ressources, demandes…", "add": "Ajouter" },
+  "authAside": {
+    "headline": "Bienvenue !",
+    "subtitle": "Votre plateforme pour partager et découvrir des ressources académiques.",
+    "featureShare": "Partagez cours, résumés et exercices",
+    "featureRequest": "Demandez ce que vous ne trouvez pas",
+    "featureLearn": "Apprenez ensemble, par filière et matière"
+  },
   "theme": { "light": "Clair", "dark": "Sombre", "toggle": "Changer de thème" },
   "language": { "label": "Langue", "en": "Anglais", "fr": "Français" },
   "auth": {

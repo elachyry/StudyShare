@@ -9,6 +9,7 @@ import '@fontsource/inter/600.css';
 import '@fontsource/poppins/500.css';
 import '@fontsource/poppins/600.css';
 import '@fontsource/poppins/700.css';
+import '@fontsource/poppins/800.css';
 import './i18n/index.js';
 import './index.css';
 import { App } from './App.js';

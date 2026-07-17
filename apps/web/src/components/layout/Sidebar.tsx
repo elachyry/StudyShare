@@ -1,4 +1,5 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import type { ComponentType } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   BookOpen,
@@ -15,117 +16,215 @@ import { Permission, Role } from '@studyshare/shared';
 import { useAuth } from '../../lib/auth.js';
 import { Button, cn } from '../ui/index.js';
 
+interface NavItem {
+  to: string;
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+  end?: boolean;
+}
+interface NavGroup {
+  label: string | null;
+  items: NavItem[];
+}
+
 /**
- * Left navigation sidebar. Fixed on desktop; a slide-in drawer on mobile
- * (controlled by `open`/`onClose` from the Layout).
+ * Left navigation. A narrow icon rail on desktop (Studydrive-style, grouped
+ * with an active blue highlight); a slide-in labeled drawer on mobile.
  */
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const { user, logout, can, hasRole } = useAuth();
-  const navigate = useNavigate();
 
-  const links = [
-    { to: '/', label: t('nav.browse'), icon: Compass, end: true },
-    { to: '/requests', label: t('nav.requests'), icon: Inbox },
-    ...(user ? [{ to: '/upload', label: t('nav.upload'), icon: Upload }] : []),
-    ...(can(Permission.RESOURCE_MODERATE)
-      ? [{ to: '/moderation', label: t('nav.moderation'), icon: ShieldCheck }]
-      : []),
-    ...(hasRole(Role.ADMIN) ? [{ to: '/admin', label: t('nav.admin'), icon: Settings }] : []),
-  ];
+  const groups: NavGroup[] = [
+    { label: null, items: [{ to: '/', label: t('nav.browse'), icon: Compass, end: true }] },
+    {
+      label: t('sidebar.study'),
+      items: [
+        ...(user ? [{ to: '/upload', label: t('nav.upload'), icon: Upload }] : []),
+        { to: '/requests', label: t('nav.requests'), icon: Inbox },
+      ],
+    },
+    {
+      label: t('sidebar.manage'),
+      items: [
+        ...(can(Permission.RESOURCE_MODERATE)
+          ? [{ to: '/moderation', label: t('nav.moderation'), icon: ShieldCheck }]
+          : []),
+        ...(hasRole(Role.ADMIN) ? [{ to: '/admin', label: t('nav.admin'), icon: Settings }] : []),
+      ],
+    },
+  ].filter((g) => g.items.length > 0);
 
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
-    cn(
-      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-      isActive
-        ? 'bg-accent text-accent-fg shadow-sm'
-        : 'text-muted hover:bg-surface-2 hover:text-text',
-    );
+  // ---- Desktop rail (icon + tiny label) ----
+  const railItem = (item: NavItem) => (
+    <NavLink
+      key={item.to}
+      to={item.to}
+      end={item.end}
+      title={item.label}
+      onClick={onClose}
+      className={({ isActive }) =>
+        cn(
+          'mx-auto flex h-14 w-14 flex-col items-center justify-center gap-1 rounded-2xl text-center text-[10px] font-semibold leading-none transition-colors',
+          isActive ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-surface-2 hover:text-text',
+        )
+      }
+    >
+      <item.icon className="h-5 w-5" />
+      <span className="w-full truncate px-0.5">{item.label}</span>
+    </NavLink>
+  );
 
-  const content = (
-    <div className="flex h-full flex-col gap-2 p-4">
-      <div className="flex items-center justify-between">
-        <Link
-          to="/"
-          onClick={onClose}
-          className="flex items-center gap-2 font-heading text-lg font-bold text-text"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-accent-fg shadow-sm">
-            <BookOpen className="h-5 w-5" aria-hidden />
-          </span>
-          {t('app.name')}
-        </Link>
-        <Button variant="ghost" size="icon" className="lg:hidden" onClick={onClose} aria-label={t('common.close')}>
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-
-      <nav className="mt-4 flex flex-1 flex-col gap-1" aria-label="Primary">
-        {links.map((l) => (
-          <NavLink key={l.to} to={l.to} end={l.end} className={linkClass} onClick={onClose}>
-            <l.icon className="h-5 w-5 shrink-0" aria-hidden />
-            {l.label}
-          </NavLink>
+  const rail = (
+    <aside className="hidden w-20 shrink-0 flex-col border-r border-border bg-surface py-4 lg:flex">
+      <Link to="/" title={t('app.name')} className="mx-auto mb-4 block">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent text-accent-fg shadow-sm">
+          <BookOpen className="h-6 w-6" aria-hidden />
+        </span>
+      </Link>
+      <div className="flex flex-1 flex-col gap-1 overflow-y-auto">
+        {groups.map((g, i) => (
+          <div key={g.label ?? `g${i}`} className="flex flex-col gap-1">
+            {g.label && (
+              <p className="mt-3 px-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted/70">
+                {g.label}
+              </p>
+            )}
+            {g.items.map(railItem)}
+          </div>
         ))}
-      </nav>
-
-      <div className="border-t border-border pt-3">
+      </div>
+      <div className="mt-2 flex flex-col items-center gap-1 border-t border-border pt-3">
         {user ? (
-          <div className="flex flex-col gap-2">
-            <Link
+          <>
+            <NavLink
               to="/profile"
+              title={t('nav.profile')}
               onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-surface-2"
+              className={({ isActive }) =>
+                cn(
+                  'flex h-11 w-11 items-center justify-center rounded-full transition-colors',
+                  isActive ? 'bg-accent/10 text-accent' : 'bg-surface-2 text-accent',
+                )
+              }
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-accent">
-                <UserIcon className="h-5 w-5" aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-text">{user.name}</span>
-                <span className="block text-xs text-muted">{user.role}</span>
-              </span>
-            </Link>
-            <Button
-              variant="ghost"
-              className="justify-start"
-              onClick={() => {
-                onClose();
-                void logout();
-              }}
-            >
-              <LogOut className="h-4 w-4" /> {t('nav.logout')}
+              <UserIcon className="h-5 w-5" />
+            </NavLink>
+            <Button variant="ghost" size="icon" title={t('nav.logout')} onClick={() => void logout()}>
+              <LogOut className="h-5 w-5" />
             </Button>
-          </div>
+          </>
         ) : (
-          <div className="flex flex-col gap-2">
-            <Button variant="primary" onClick={() => { onClose(); navigate('/signup'); }}>
-              {t('nav.signup')}
+          <Link to="/login" title={t('nav.login')}>
+            <Button variant="ghost" size="icon">
+              <UserIcon className="h-5 w-5" />
             </Button>
-            <Button variant="outline" onClick={() => { onClose(); navigate('/login'); }}>
-              {t('nav.login')}
-            </Button>
-          </div>
+          </Link>
         )}
       </div>
+    </aside>
+  );
+
+  // ---- Mobile drawer (icon + label rows) ----
+  const drawerItem = (item: NavItem) => (
+    <NavLink
+      key={item.to}
+      to={item.to}
+      end={item.end}
+      onClick={onClose}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+          isActive ? 'bg-accent text-accent-fg' : 'text-muted hover:bg-surface-2 hover:text-text',
+        )
+      }
+    >
+      <item.icon className="h-5 w-5 shrink-0" />
+      {item.label}
+    </NavLink>
+  );
+
+  const drawer = (
+    <div className="fixed inset-0 z-40 lg:hidden">
+      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} aria-hidden />
+      <aside className="absolute left-0 top-0 flex h-full w-72 max-w-[85vw] flex-col gap-2 border-r border-border bg-surface p-4 shadow-xl animate-slide-up">
+        <div className="flex items-center justify-between">
+          <Link
+            to="/"
+            onClick={onClose}
+            className="flex items-center gap-2 font-heading text-lg font-bold text-text"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-accent-fg">
+              <BookOpen className="h-5 w-5" aria-hidden />
+            </span>
+            {t('app.name')}
+          </Link>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label={t('common.close')}>
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        <nav className="mt-2 flex flex-1 flex-col gap-1 overflow-y-auto" aria-label="Primary">
+          {groups.map((g, i) => (
+            <div key={g.label ?? `g${i}`} className="flex flex-col gap-1">
+              {g.label && (
+                <p className="mt-3 px-3 text-[10px] font-bold uppercase tracking-wider text-muted/70">
+                  {g.label}
+                </p>
+              )}
+              {g.items.map(drawerItem)}
+            </div>
+          ))}
+        </nav>
+        <div className="border-t border-border pt-3">
+          {user ? (
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/profile"
+                onClick={onClose}
+                className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-surface-2"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-accent">
+                  <UserIcon className="h-5 w-5" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-text">{user.name}</span>
+                  <span className="block text-xs text-muted">{user.role}</span>
+                </span>
+              </Link>
+              <Button
+                variant="ghost"
+                className="justify-start"
+                onClick={() => {
+                  onClose();
+                  void logout();
+                }}
+              >
+                <LogOut className="h-4 w-4" /> {t('nav.logout')}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Link to="/signup" onClick={onClose}>
+                <Button variant="primary" className="w-full">
+                  {t('nav.signup')}
+                </Button>
+              </Link>
+              <Link to="/login" onClick={onClose}>
+                <Button variant="outline" className="w-full">
+                  {t('nav.login')}
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </aside>
     </div>
   );
 
   return (
     <>
-      {/* Desktop: fixed rail */}
-      <aside className="hidden w-64 shrink-0 border-r border-border bg-surface lg:block">
-        {content}
-      </aside>
-
-      {/* Mobile: drawer */}
-      {open && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} aria-hidden />
-          <aside className="absolute left-0 top-0 h-full w-72 max-w-[85vw] border-r border-border bg-surface shadow-xl animate-slide-up">
-            {content}
-          </aside>
-        </div>
-      )}
+      {rail}
+      {open && drawer}
     </>
   );
 }
