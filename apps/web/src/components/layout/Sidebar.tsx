@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import { useState, type ComponentType } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { Permission, Role } from '@studyshare/shared';
 import { useAuth } from '../../lib/auth.js';
-import { Button, cn } from '../ui/index.js';
+import { Button, Modal, cn } from '../ui/index.js';
 
 interface NavItem {
   to: string;
@@ -34,6 +34,7 @@ interface NavGroup {
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const { user, logout, can, hasRole } = useAuth();
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   const groups: NavGroup[] = [
     { label: null, items: [{ to: '/', label: t('nav.browse'), icon: Compass, end: true }] },
@@ -110,7 +111,12 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             >
               <UserIcon className="h-5 w-5" />
             </NavLink>
-            <Button variant="ghost" size="icon" title={t('nav.logout')} onClick={() => void logout()}>
+            <Button
+              variant="ghost"
+              size="icon"
+              title={t('nav.logout')}
+              onClick={() => setConfirmLogout(true)}
+            >
               <LogOut className="h-5 w-5" />
             </Button>
           </>
@@ -194,10 +200,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               <Button
                 variant="ghost"
                 className="justify-start"
-                onClick={() => {
-                  onClose();
-                  void logout();
-                }}
+                onClick={() => setConfirmLogout(true)}
               >
                 <LogOut className="h-4 w-4" /> {t('nav.logout')}
               </Button>
@@ -225,6 +228,31 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     <>
       {rail}
       {open && drawer}
+      <Modal
+        open={confirmLogout}
+        onClose={() => setConfirmLogout(false)}
+        title={t('nav.logout')}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirmLogout(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                setConfirmLogout(false);
+                onClose();
+                void logout();
+              }}
+            >
+              {t('nav.logout')}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted">{t('auth.logoutConfirm')}</p>
+      </Modal>
     </>
   );
 }
+

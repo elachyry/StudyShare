@@ -76,7 +76,8 @@
     "currentPassword": "Mot de passe actuel",
     "newPassword": "Nouveau mot de passe",
     "passwordChanged": "Mot de passe modifié avec succès.",
-    "emailNotVerifiedBanner": "Votre e-mail n'est pas encore vérifié. Certaines actions sont désactivées."
+    "emailNotVerifiedBanner": "Votre e-mail n'est pas encore vérifié. Certaines actions sont désactivées.",
+    "logoutConfirm": "Voulez-vous vraiment vous déconnecter ?"
   },
   "resources": {
     "title": "Ressources",

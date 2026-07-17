@@ -76,7 +76,8 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "passwordChanged": "Password changed successfully.",
-    "emailNotVerifiedBanner": "Your email isn't verified yet. Some actions are disabled until you verify."
+    "emailNotVerifiedBanner": "Your email isn't verified yet. Some actions are disabled until you verify.",
+    "logoutConfirm": "Are you sure you want to log out?"
   },
   "resources": {
     "title": "Resources",
