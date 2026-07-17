@@ -115,7 +115,7 @@ export function BrowsePage() {
 
       {/* Results */}
       {query.isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-48" />
           ))}
@@ -124,7 +124,7 @@ export function BrowsePage() {
         <EmptyState icon={<FileQuestion className="h-10 w-10" />} title={t('resources.empty')} />
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {items.map((r) => (
               <ResourceCard key={r.id} resource={r} />
             ))}
