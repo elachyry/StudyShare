@@ -19,10 +19,10 @@ const VARIANTS: Record<Variant, string> = {
   outline: 'border border-border bg-transparent text-text hover:bg-surface-2',
 };
 const SIZES: Record<Size, string> = {
-  sm: 'h-8 px-3 text-sm',
-  md: 'h-10 px-4 text-sm',
-  lg: 'h-12 px-6 text-base',
-  icon: 'h-10 w-10',
+  sm: 'h-9 px-4 text-sm',
+  md: 'h-[48px] px-5 text-base',
+  lg: 'h-[52px] px-7 text-base',
+  icon: 'h-[48px] w-[48px]',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

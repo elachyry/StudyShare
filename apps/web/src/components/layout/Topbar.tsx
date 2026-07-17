@@ -40,7 +40,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t('topbar.search')}
-          className="h-11 rounded-full bg-surface-2 pl-10"
+          className="rounded-full bg-surface-2 pl-11"
           aria-label={t('common.search')}
         />
       </form>

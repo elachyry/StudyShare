@@ -9,7 +9,7 @@ export function LanguageSwitcher() {
   return (
     <button
       onClick={() => void i18n.changeLanguage(next)}
-      className="inline-flex h-10 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-text hover:bg-surface-2"
+      className="inline-flex h-[48px] items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-text hover:bg-surface-2"
       aria-label={t('language.label')}
     >
       <Languages className="h-4 w-4" aria-hidden />
