@@ -3,21 +3,22 @@
 @tailwind utilities;
 
 /*
- * Semantic design tokens. Palette:
- *   #0F172A slate-900 (primary/dark bg), #06B6D4 cyan-500 (accent),
- *   #E2E8F0 slate-200 (light surface).
+ * Semantic design tokens — Quizlet-inspired palette:
+ *   #4257B2 violet-blue (primary/accent), #3CCFCF turquoise (secondary accent),
+ *   near-white violet-tinted surfaces (light) / deep indigo-navy (dark).
  * Colors are stored as space-separated RGB channels so Tailwind's
  * `<alpha-value>` opacity modifier works (e.g. bg-accent/10).
  */
 :root {
-  --bg: 241 245 249; /* slate-100 */
+  --bg: 246 247 251; /* #F6F7FB */
   --surface: 255 255 255; /* white */
-  --surface-2: 226 232 240; /* slate-200 */
-  --text: 15 23 42; /* slate-900 */
-  --muted: 100 116 139; /* slate-500 */
-  --accent: 6 182 212; /* cyan-500 */
+  --surface-2: 236 238 247; /* #ECEEF7 violet-tinted */
+  --text: 26 27 58; /* #1A1B3A ink */
+  --muted: 99 102 138; /* #63668A */
+  --accent: 66 87 178; /* #4257B2 violet-blue */
+  --accent-2: 60 207 207; /* #3CCFCF turquoise */
   --accent-fg: 255 255 255;
-  --border: 203 213 225; /* slate-300 */
+  --border: 224 226 240; /* #E0E2F0 */
   --danger: 220 38 38;
   --success: 22 163 74;
   --warning: 202 138 4;
@@ -26,14 +27,15 @@
 
 :root.dark,
 :root[data-theme='dark'] {
-  --bg: 15 23 42; /* slate-900 */
-  --surface: 30 41 59; /* slate-800 */
-  --surface-2: 51 65 85; /* slate-700 */
-  --text: 226 232 240; /* slate-200 */
-  --muted: 148 163 184; /* slate-400 */
-  --accent: 6 182 212; /* cyan-500 */
-  --accent-fg: 15 23 42;
-  --border: 51 65 85; /* slate-700 */
+  --bg: 20 21 43; /* #14152B deep indigo-navy */
+  --surface: 30 31 61; /* #1E1F3D */
+  --surface-2: 42 43 82; /* #2A2B52 */
+  --text: 231 232 245; /* #E7E8F5 */
+  --muted: 154 156 192; /* #9A9CC0 */
+  --accent: 108 124 224; /* #6C7CE0 brighter violet-blue for contrast */
+  --accent-2: 60 207 207; /* #3CCFCF turquoise */
+  --accent-fg: 255 255 255;
+  --border: 51 53 106; /* #33356A */
   --danger: 248 113 113;
   --success: 74 222 128;
   --warning: 250 204 21;
@@ -49,6 +51,16 @@ body,
 body {
   @apply bg-bg text-text antialiased;
   font-feature-settings: 'cv11', 'ss01';
+}
+
+/* Headings use Poppins for a friendly, bold study-app feel. */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
 }
 
 /* Consistent, visible focus ring for keyboard users (WCAG AA). */

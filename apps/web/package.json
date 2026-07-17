@@ -12,6 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.1.0",
+    "@fontsource/poppins": "^5.1.0",
     "@studyshare/shared": "workspace:*",
     "@tanstack/react-query": "^5.62.7",
     "axios": "^1.7.9",

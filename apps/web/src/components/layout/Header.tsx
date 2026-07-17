@@ -31,8 +31,10 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-surface/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-        <Link to="/" className="flex items-center gap-2 font-bold text-text">
-          <BookOpen className="h-6 w-6 text-accent" aria-hidden />
+        <Link to="/" className="flex items-center gap-2 font-heading text-lg font-bold text-text">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-accent-fg shadow-sm">
+            <BookOpen className="h-5 w-5" aria-hidden />
+          </span>
           <span className="hidden sm:inline">{t('app.name')}</span>
         </Link>
 

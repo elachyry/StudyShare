@@ -13,6 +13,7 @@ export default {
         text: 'rgb(var(--text) / <alpha-value>)',
         muted: 'rgb(var(--muted) / <alpha-value>)',
         accent: 'rgb(var(--accent) / <alpha-value>)',
+        'accent-2': 'rgb(var(--accent-2) / <alpha-value>)',
         'accent-fg': 'rgb(var(--accent-fg) / <alpha-value>)',
         border: 'rgb(var(--border) / <alpha-value>)',
         danger: 'rgb(var(--danger) / <alpha-value>)',
@@ -22,6 +23,7 @@ export default {
       borderColor: { DEFAULT: 'rgb(var(--border) / <alpha-value>)' },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        heading: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },

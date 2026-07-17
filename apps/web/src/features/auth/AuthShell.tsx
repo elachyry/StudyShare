@@ -18,8 +18,10 @@ export function AuthShell({
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <div className="flex items-center justify-between p-4">
-        <Link to="/" className="flex items-center gap-2 font-bold text-text">
-          <BookOpen className="h-6 w-6 text-accent" aria-hidden />
+        <Link to="/" className="flex items-center gap-2 font-heading text-lg font-bold text-text">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-accent-fg shadow-sm">
+            <BookOpen className="h-5 w-5" aria-hidden />
+          </span>
           {t('app.name')}
         </Link>
         <div className="flex items-center gap-1">
