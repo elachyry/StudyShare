@@ -6,7 +6,7 @@ import { Search, SlidersHorizontal, FileQuestion, Inbox } from 'lucide-react';
 import type { ListResourcesQuery, ResourceType } from '@studyshare/shared';
 import { resourcesApi } from '../../lib/api.js';
 import { useBranches, useSubjects, localizedName } from '../../lib/hooks.js';
-import { Button, Input, Select, Skeleton, EmptyState } from '../../components/ui/index.js';
+import { Button, Input, Select, Skeleton, Spinner, EmptyState } from '../../components/ui/index.js';
 import { ResourceCard } from './ResourceCard.js';
 
 const TYPES: ResourceType[] = ['LESSON', 'SUMMARY', 'EXERCISE'];
@@ -27,6 +27,15 @@ export function BrowsePage() {
     setSearchInput(urlQ);
     setFilters((f) => ({ ...f, q: urlQ || undefined }));
   }, [urlQ]);
+
+  // Dynamic search: debounce keystrokes into the query (no Enter needed).
+  useEffect(() => {
+    const next = searchInput.trim() || undefined;
+    const id = setTimeout(() => {
+      setFilters((f) => (f.q === next ? f : { ...f, q: next }));
+    }, 300);
+    return () => clearTimeout(id);
+  }, [searchInput]);
 
   const branches = useBranches();
   const subjects = useSubjects(filters.branchId);
@@ -51,29 +60,23 @@ export function BrowsePage() {
         <p className="mt-1 text-muted">{t('app.tagline')}</p>
       </div>
 
-      {/* Search + filters */}
-      <div className="flex flex-col gap-3">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            update({ q: searchInput || undefined });
-          }}
-          className="flex gap-2"
-        >
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-            <Input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={t('resources.searchPlaceholder')}
-              className="pl-9"
-              aria-label={t('common.search')}
-            />
-          </div>
-          <Button type="submit">{t('common.search')}</Button>
-        </form>
+      {/* Search + filters (one clean panel; search is live/debounced) */}
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 shadow-sm sm:p-5">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
+          <Input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder={t('resources.searchPlaceholder')}
+            className="bg-surface-2 pl-12 pr-10"
+            aria-label={t('common.search')}
+          />
+          {query.isFetching && (
+            <Spinner className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" />
+          )}
+        </div>
 
-        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface p-4">
+        <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
           <span className="flex items-center gap-1.5 text-sm font-medium text-muted">
             <SlidersHorizontal className="h-4 w-4" /> {t('resources.filters')}
           </span>
