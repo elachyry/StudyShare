@@ -119,9 +119,13 @@ describe('resources', () => {
     expect(approved.statusCode).toBe(200);
     expect(approved.json().status).toBe('APPROVED');
 
-    // Full-text search finds it.
+    // Full-text search finds it — by whole word AND by prefix (as typed).
     const search = await app.inject({ method: 'GET', url: '/api/resources?q=dijkstra' });
     expect(search.json().items).toHaveLength(1);
+    const partial = await app.inject({ method: 'GET', url: '/api/resources?q=dijk' });
+    expect(partial.json().items).toHaveLength(1);
+    const partialWord = await app.inject({ method: 'GET', url: '/api/resources?q=short' });
+    expect(partialWord.json().items).toHaveLength(1);
 
     // The owner was notified.
     const notes = await app.prisma.notification.findMany({ where: { userId: user.id } });

@@ -74,8 +74,19 @@ export async function listResources(
   if (query.subjectId) conds.push(`r."subjectId" = ${push(query.subjectId)}`);
   if (query.type) conds.push(`r."type" = ${push(query.type)}::"ResourceType"`);
   if (query.minRating) conds.push(`r."avgRating" >= ${push(query.minRating)}`);
-  if (query.q) {
-    conds.push(`r."searchVector" @@ plainto_tsquery('simple', ${push(query.q)})`);
+  // Full-text search with PREFIX matching so partial words (as typed) match:
+  // each token becomes `token:*`. Tokens are sanitized (letters/digits only) so
+  // the constructed tsquery can never contain operator syntax.
+  const terms = query.q
+    ? query.q
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+        .split(/\s+/)
+        .filter(Boolean)
+    : [];
+  if (terms.length > 0) {
+    const tsquery = terms.map((trm) => `${trm}:*`).join(' & ');
+    conds.push(`r."searchVector" @@ to_tsquery('simple', ${push(tsquery)})`);
   }
 
   const cursor = decodeCursor(query.cursor);
