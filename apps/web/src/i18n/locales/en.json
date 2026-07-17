@@ -91,6 +91,8 @@
     "sortDownloads": "Most downloaded",
     "sortRating": "Top rated",
     "empty": "No resources found. Try adjusting your filters.",
+    "emptyHint": "Can't find what you need?",
+    "requestMissing": "Request it",
     "downloads": "{{count}} downloads",
     "download": "Download",
     "by": "by",

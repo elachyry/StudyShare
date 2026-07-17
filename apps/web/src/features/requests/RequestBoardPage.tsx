@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,9 +35,22 @@ const TYPES: ResourceType[] = ['LESSON', 'SUMMARY', 'EXERCISE'];
 export function RequestBoardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [sort, setSort] = useState<'votes' | 'newest'>('votes');
-  const [createOpen, setCreateOpen] = useState(false);
+  // Open pre-filled when arriving from the browse empty-state ("Request it").
+  const [createOpen, setCreateOpen] = useState(searchParams.get('create') === '1');
+  const createDefaults: Partial<CreateRequestInput> = {
+    title: searchParams.get('title') ?? undefined,
+    branchId: searchParams.get('branchId') ?? undefined,
+    subjectId: searchParams.get('subjectId') ?? undefined,
+    type: (searchParams.get('type') as CreateRequestInput['type']) ?? undefined,
+  };
   const [fulfillFor, setFulfillFor] = useState<ResourceRequest | null>(null);
+
+  const closeCreate = () => {
+    setCreateOpen(false);
+    if (searchParams.has('create')) setSearchParams({}, { replace: true });
+  };
 
   const query = useInfiniteQuery({
     queryKey: ['requests', sort],
@@ -100,7 +113,7 @@ export function RequestBoardPage() {
         </div>
       )}
 
-      {createOpen && <CreateRequestModal onClose={() => setCreateOpen(false)} />}
+      {createOpen && <CreateRequestModal defaults={createDefaults} onClose={closeCreate} />}
       {fulfillFor && (
         <FulfillModal request={fulfillFor} onClose={() => setFulfillFor(null)} />
       )}
@@ -181,7 +194,13 @@ function RequestRow({
   );
 }
 
-function CreateRequestModal({ onClose }: { onClose: () => void }) {
+function CreateRequestModal({
+  defaults,
+  onClose,
+}: {
+  defaults?: Partial<CreateRequestInput>;
+  onClose: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const toast = useToast();
@@ -192,7 +211,10 @@ function CreateRequestModal({ onClose }: { onClose: () => void }) {
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<CreateRequestInput>({ resolver: zodResolver(createRequestSchema) });
+  } = useForm<CreateRequestInput>({
+    resolver: zodResolver(createRequestSchema),
+    defaultValues: defaults,
+  });
   const branchId = watch('branchId');
   const branches = useBranches();
   const subjects = useSubjects(branchId);

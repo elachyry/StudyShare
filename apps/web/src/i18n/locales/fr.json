@@ -91,6 +91,8 @@
     "sortDownloads": "Plus téléchargé",
     "sortRating": "Mieux noté",
     "empty": "Aucune ressource trouvée. Essayez d'ajuster vos filtres.",
+    "emptyHint": "Vous ne trouvez pas ce qu'il vous faut ?",
+    "requestMissing": "Faire une demande",
     "downloads": "{{count}} téléchargements",
     "download": "Télécharger",
     "by": "par",

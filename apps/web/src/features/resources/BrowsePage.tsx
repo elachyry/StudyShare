@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Search, SlidersHorizontal, FileQuestion } from 'lucide-react';
+import { Search, SlidersHorizontal, FileQuestion, Inbox } from 'lucide-react';
 import type { ListResourcesQuery, ResourceType } from '@studyshare/shared';
 import { resourcesApi } from '../../lib/api.js';
 import { useBranches, useSubjects, localizedName } from '../../lib/hooks.js';
@@ -13,6 +13,7 @@ const TYPES: ResourceType[] = ['LESSON', 'SUMMARY', 'EXERCISE'];
 
 export function BrowsePage() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const urlQ = params.get('q') ?? '';
   const [filters, setFilters] = useState<Partial<ListResourcesQuery>>({
@@ -133,7 +134,25 @@ export function BrowsePage() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState icon={<FileQuestion className="h-10 w-10" />} title={t('resources.empty')} />
+        <EmptyState
+          icon={<FileQuestion className="h-10 w-10" />}
+          title={t('resources.empty')}
+          description={t('resources.emptyHint')}
+          action={
+            <Button
+              onClick={() => {
+                const sp = new URLSearchParams({ create: '1' });
+                if (searchInput.trim()) sp.set('title', searchInput.trim());
+                if (filters.branchId) sp.set('branchId', filters.branchId);
+                if (filters.subjectId) sp.set('subjectId', filters.subjectId);
+                if (filters.type) sp.set('type', filters.type);
+                navigate(`/requests?${sp.toString()}`);
+              }}
+            >
+              <Inbox className="h-4 w-4" /> {t('resources.requestMissing')}
+            </Button>
+          }
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
