@@ -63,7 +63,12 @@ services:
     volumes:
       - ./apps/api:/app/apps/api
       - ./packages/shared:/app/packages/shared
+      # Shield the container-installed node_modules from the host bind mounts.
+      # pnpm (shamefully-hoist=false) puts binaries like tsx in the *nested*
+      # package node_modules, so each one needs its own anonymous volume.
       - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/packages/shared/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -95,6 +100,8 @@ services:
       - ./apps/web:/app/apps/web
       - ./packages/shared:/app/packages/shared
       - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/shared/node_modules
     depends_on:
       - api
 
