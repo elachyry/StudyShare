@@ -23,7 +23,7 @@ import {
 import { rateResource } from './ratings.service.js';
 import { serializeResource, serializeComment } from '../../lib/serializers.js';
 import { assertOwnership } from '../../plugins/rbac.js';
-import { getDownloadUrl } from '../../lib/storage.js';
+import { getDownloadUrl, getViewUrl, isInlineViewable } from '../../lib/storage.js';
 import { notify } from '../../lib/notifications.js';
 import { AuditAction } from '../../lib/audit.js';
 import { Errors } from '../../lib/errors.js';
@@ -226,6 +226,26 @@ export const resourceRoutes: FastifyPluginAsyncZod = async (app) => {
         metadata: { fileId: resource.fileId },
       });
       return url;
+    },
+  );
+
+  // --- Inline view URL (signed; authenticated) for in-browser preview ---
+  app.get(
+    '/:id/view',
+    {
+      onRequest: app.authenticate,
+      schema: {
+        tags: ['resources'],
+        params: z.object({ id: z.string() }),
+        response: { 200: downloadUrlSchema },
+      },
+    },
+    async (req) => {
+      const resource = await getResourceOrThrow(app, req.params.id, req.authUser);
+      if (!isInlineViewable(resource.file.mimeType)) throw Errors.validation();
+      // Note: unlike /download this does not increment downloadsCount — a preview
+      // is not a download.
+      return getViewUrl(resource.file.storageKey, resource.file.mimeType, resource.file.originalName);
     },
   );
 

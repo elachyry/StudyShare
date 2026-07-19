@@ -38,6 +38,17 @@ export function ResourceDetailPage() {
     queryFn: () => resourcesApi.comments(id),
   });
 
+  const mimeType = resourceQuery.data?.mimeType ?? '';
+  const isPdf = mimeType === 'application/pdf';
+  const isImage = mimeType.startsWith('image/');
+  const previewable = isPdf || isImage;
+  const viewQuery = useQuery({
+    queryKey: ['resource', id, 'view'],
+    queryFn: () => resourcesApi.view(id),
+    enabled: previewable && !!user,
+    staleTime: 60_000,
+  });
+
   const download = useMutation({
     mutationFn: () => resourcesApi.download(id),
     onSuccess: (data) => {
@@ -138,6 +149,34 @@ export function ResourceDetailPage() {
           </div>
         </CardBody>
       </Card>
+
+      {/* Inline preview (PDF / image) */}
+      {previewable && (
+        <Card>
+          <CardBody className="flex flex-col gap-3">
+            <h2 className="font-semibold text-text">{t('resources.preview')}</h2>
+            {!user ? (
+              <p className="text-sm text-muted">{t('resources.signInToPreview')}</p>
+            ) : viewQuery.isLoading ? (
+              <Skeleton className="h-96" />
+            ) : viewQuery.isError || !viewQuery.data ? (
+              <p className="text-sm text-muted">{t('resources.previewUnavailable')}</p>
+            ) : isPdf ? (
+              <iframe
+                src={viewQuery.data.url}
+                title={r.fileName ?? r.title}
+                className="h-[75vh] w-full rounded-lg border border-border bg-surface-2"
+              />
+            ) : (
+              <img
+                src={viewQuery.data.url}
+                alt={r.title}
+                className="mx-auto max-h-[75vh] rounded-lg border border-border object-contain"
+              />
+            )}
+          </CardBody>
+        </Card>
+      )}
 
       {/* Ratings */}
       <Card>

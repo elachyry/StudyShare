@@ -92,6 +92,7 @@ export const resourcesApi = {
     http.post<Resource>(`/resources/${id}/moderate`, { decision, reason }).then((r) => r.data),
   download: (id: string) =>
     http.get<DownloadUrl>(`/resources/${id}/download`).then((r) => r.data),
+  view: (id: string) => http.get<DownloadUrl>(`/resources/${id}/view`).then((r) => r.data),
   rate: (id: string, value: number) =>
     http
       .put<{ averageRating: number; ratingsCount: number }>(`/resources/${id}/rating`, { value })

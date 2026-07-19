@@ -1,5 +1,5 @@
 import { useState, type ComponentType } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   BookOpen,
@@ -34,6 +34,7 @@ interface NavGroup {
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const { user, logout, can, hasRole } = useAuth();
+  const navigate = useNavigate();
   const [confirmLogout, setConfirmLogout] = useState(false);
 
   const groups: NavGroup[] = [
@@ -242,7 +243,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               onClick={() => {
                 setConfirmLogout(false);
                 onClose();
-                void logout();
+                void logout().then(() => navigate('/login', { replace: true }));
               }}
             >
               {t('nav.logout')}

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Download } from 'lucide-react';
-import { Role, type Role as RoleT, type UserStatus } from '@studyshare/shared';
+import { Download, X } from 'lucide-react';
+import { Role, type Role as RoleT, type UserStatus, type Branch } from '@studyshare/shared';
 import { adminApi, branchesApi } from '../../lib/api.js';
-import { useBranches, localizedName } from '../../lib/hooks.js';
+import { useBranches, useSubjects, localizedName } from '../../lib/hooks.js';
 import { useToast } from '../../lib/toast.js';
 import { useApiError } from '../../lib/useApiError.js';
 import {
@@ -140,7 +140,7 @@ function UsersTab() {
 }
 
 function BranchesTab() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const toast = useToast();
   const apiError = useApiError();
@@ -162,10 +162,124 @@ function BranchesTab() {
   });
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="flex flex-col gap-6">
       <Card>
         <CardBody className="flex flex-col gap-3">
           <h2 className="font-semibold text-text">{t('admin.createBranch')}</h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Input
+              label={t('admin.nameEn')}
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            />
+            <Input
+              label={t('admin.nameFr')}
+              value={form.nameFr}
+              onChange={(e) => setForm((f) => ({ ...f, nameFr: e.target.value }))}
+            />
+            <Input
+              label={t('admin.slug')}
+              hint={t('admin.slugHint')}
+              value={form.slug}
+              onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+            />
+          </div>
+          <div className="self-end">
+            <Button
+              loading={create.isPending}
+              disabled={!form.name || !form.nameFr || !form.slug}
+              onClick={() => create.mutate()}
+            >
+              {t('admin.createBranch')}
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+
+      <div className="flex flex-col gap-3">
+        <h2 className="font-semibold text-text">{t('admin.branches')}</h2>
+        {branches.isLoading ? (
+          <Skeleton className="h-40" />
+        ) : branches.data?.length === 0 ? (
+          <p className="text-sm text-muted">{t('admin.noBranches')}</p>
+        ) : (
+          branches.data?.map((b) => (
+            <BranchItem key={b.id} branch={b} onDelete={() => remove.mutate(b.id)} />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** A branch card with its subjects and an inline "add subject" form. */
+function BranchItem({ branch, onDelete }: { branch: Branch; onDelete: () => void }) {
+  const { t, i18n } = useTranslation();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const apiError = useApiError();
+  const subjects = useSubjects(branch.id);
+  const [form, setForm] = useState({ name: '', nameFr: '', slug: '' });
+
+  const invalidate = () => void qc.invalidateQueries({ queryKey: ['subjects', branch.id] });
+
+  const addSubject = useMutation({
+    mutationFn: () => branchesApi.createSubject({ branchId: branch.id, ...form }),
+    onSuccess: () => {
+      setForm({ name: '', nameFr: '', slug: '' });
+      invalidate();
+    },
+    onError: (e) => toast.error(apiError(e)),
+  });
+  const removeSubject = useMutation({
+    mutationFn: (id: string) => branchesApi.removeSubject(id),
+    onSuccess: invalidate,
+    onError: (e) => toast.error(apiError(e)),
+  });
+
+  return (
+    <Card>
+      <CardBody className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium text-text">
+            {localizedName(branch, i18n.language)}{' '}
+            <span className="text-muted">({branch.slug})</span>
+          </span>
+          <Button size="sm" variant="ghost" onClick={onDelete}>
+            {t('common.delete')}
+          </Button>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted/70">
+            {t('admin.subjects')}
+          </p>
+          {subjects.isLoading ? (
+            <Skeleton className="h-8" />
+          ) : subjects.data?.length === 0 ? (
+            <p className="text-sm text-muted">{t('admin.noSubjects')}</p>
+          ) : (
+            <ul className="flex flex-wrap gap-2">
+              {subjects.data?.map((s) => (
+                <li
+                  key={s.id}
+                  className="flex items-center gap-1.5 rounded-full bg-surface-2 py-1 pl-3 pr-1.5 text-sm text-text"
+                >
+                  {localizedName(s, i18n.language)}
+                  <button
+                    onClick={() => removeSubject.mutate(s.id)}
+                    aria-label={t('common.delete')}
+                    className="rounded-full p-0.5 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 border-t border-border pt-4 sm:grid-cols-4 sm:items-end">
           <Input
             label={t('admin.nameEn')}
             value={form.name}
@@ -178,43 +292,20 @@ function BranchesTab() {
           />
           <Input
             label={t('admin.slug')}
+            hint={t('admin.slugHint')}
             value={form.slug}
             onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
           />
-          <div className="self-end">
-            <Button
-              loading={create.isPending}
-              disabled={!form.name || !form.nameFr || !form.slug}
-              onClick={() => create.mutate()}
-            >
-              {t('common.save')}
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardBody className="flex flex-col gap-2">
-          <h2 className="font-semibold text-text">{t('admin.branches')}</h2>
-          {branches.isLoading ? (
-            <Skeleton className="h-40" />
-          ) : (
-            <ul className="divide-y divide-border">
-              {branches.data?.map((b) => (
-                <li key={b.id} className="flex items-center justify-between py-2">
-                  <span className="text-text">
-                    {localizedName(b, i18n.language)} <span className="text-muted">({b.slug})</span>
-                  </span>
-                  <Button size="sm" variant="ghost" onClick={() => remove.mutate(b.id)}>
-                    {t('common.delete')}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardBody>
-      </Card>
-    </div>
+          <Button
+            loading={addSubject.isPending}
+            disabled={!form.name || !form.nameFr || !form.slug}
+            onClick={() => addSubject.mutate()}
+          >
+            {t('admin.addSubject')}
+          </Button>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
 

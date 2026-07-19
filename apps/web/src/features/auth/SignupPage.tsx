@@ -1,9 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { signupSchema, type SignupInput } from '@studyshare/shared';
 import { authApi } from '../../lib/api.js';
+import { useAuth } from '../../lib/auth.js';
 import { useToast } from '../../lib/toast.js';
 import { useApiError } from '../../lib/useApiError.js';
 import { AuthShell } from './AuthShell.js';
@@ -12,6 +13,8 @@ import { Button, Input } from '../../components/ui/index.js';
 
 export function SignupPage() {
   const { t } = useTranslation();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const toast = useToast();
   const apiError = useApiError();
   const {
@@ -24,8 +27,13 @@ export function SignupPage() {
   const onSubmit = handleSubmit(async (values) => {
     try {
       await authApi.signup(values);
-      toast.success(t('auth.signupSuccess'));
+      // Signing up does NOT log you in. Clear any lingering session (a stale
+      // refresh cookie would otherwise silently re-authenticate on reload), then
+      // send the user to the login page.
+      await logout().catch(() => {});
       reset();
+      toast.success(t('auth.signupSuccess'));
+      navigate('/login', { replace: true });
     } catch (err) {
       toast.error(apiError(err));
     }

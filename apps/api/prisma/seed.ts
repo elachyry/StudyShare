@@ -21,6 +21,14 @@ async function hash(pw: string): Promise<string> {
 }
 
 async function main(): Promise<void> {
+  // Idempotency guard: some entities below use create() (not upsert), so running
+  // the seed on an already-seeded database would duplicate them. Bail early if
+  // data already exists. Use `db:reset` to wipe and re-seed from scratch.
+  if ((await prisma.resource.count()) > 0) {
+    console.log('Database already seeded; skipping.');
+    return;
+  }
+
   // Users -------------------------------------------------------------------
   const [adminPw, modPw, studentPw] = await Promise.all([
     hash('Admin!Pass123'),

@@ -119,6 +119,12 @@ export const branchRoutes: FastifyPluginAsyncZod = async (app) => {
       schema: { tags: ['branches'], body: createSubjectSchema, response: { 201: subjectSchema } },
     },
     async (req, reply) => {
+      const branch = await app.prisma.branch.findUnique({ where: { id: req.body.branchId } });
+      if (!branch) throw Errors.notFound();
+      const clash = await app.prisma.subject.findUnique({
+        where: { branchId_slug: { branchId: req.body.branchId, slug: req.body.slug } },
+      });
+      if (clash) throw Errors.conflict();
       const subject = await app.prisma.subject.create({ data: req.body });
       await req.audit(AuditAction.SUBJECT_CREATE, {
         targetType: 'subject',

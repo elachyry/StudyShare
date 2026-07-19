@@ -50,11 +50,15 @@ services:
       dockerfile: apps/api/Dockerfile
       target: dev
     restart: unless-stopped
+    # Apply pending migrations, seed once (idempotent), then start the dev server.
+    command: sh -c "pnpm db:migrate && pnpm db:seed && pnpm dev"
     env_file:
       - .env
     environment:
       DATABASE_URL: postgresql://studyshare:studyshare@postgres:5432/studyshare
       S3_ENDPOINT: http://minio:9000
+      # Browser-reachable MinIO host for signed download/preview URLs.
+      S3_PUBLIC_ENDPOINT: http://localhost:9000
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
       HOST: 0.0.0.0

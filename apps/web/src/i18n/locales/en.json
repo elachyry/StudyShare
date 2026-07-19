@@ -37,8 +37,14 @@
     "optional": "optional",
     "required": "required"
   },
-  "sidebar": { "study": "Study", "manage": "Manage" },
-  "topbar": { "search": "Search resources, requests…", "add": "Add" },
+  "sidebar": {
+    "study": "Study",
+    "manage": "Manage"
+  },
+  "topbar": {
+    "search": "Search resources, requests…",
+    "add": "Add"
+  },
   "authAside": {
     "headline": "Welcome!",
     "subtitle": "Your hub to share and discover academic resources.",
@@ -46,8 +52,16 @@
     "featureRequest": "Request what you can't find",
     "featureLearn": "Learn together, by branch & subject"
   },
-  "theme": { "light": "Light", "dark": "Dark", "toggle": "Toggle theme" },
-  "language": { "label": "Language", "en": "English", "fr": "French" },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "fr": "French"
+  },
   "auth": {
     "loginTitle": "Welcome back",
     "loginSubtitle": "Log in to your StudyShare account",
@@ -111,7 +125,14 @@
     "reportReason": "Why are you reporting this?",
     "reported": "Thanks — our moderators will review this.",
     "deleteConfirm": "Delete this resource? This cannot be undone.",
-    "types": { "LESSON": "Lesson", "SUMMARY": "Summary", "EXERCISE": "Exercise" }
+    "types": {
+      "LESSON": "Lesson",
+      "SUMMARY": "Summary",
+      "EXERCISE": "Exercise"
+    },
+    "preview": "Preview",
+    "previewUnavailable": "Preview is not available for this file. Use Download to open it.",
+    "signInToPreview": "Sign in to preview this file."
   },
   "upload": {
     "title": "Upload a resource",
@@ -197,7 +218,12 @@
     "ip": "IP",
     "nameEn": "Name (EN)",
     "nameFr": "Name (FR)",
-    "slug": "Slug"
+    "slug": "Slug",
+    "subjects": "Subjects",
+    "addSubject": "Add subject",
+    "noSubjects": "No subjects yet.",
+    "noBranches": "No branches yet.",
+    "slugHint": "lowercase, e.g. computer-science"
   },
   "notifications": {
     "title": "Notifications",

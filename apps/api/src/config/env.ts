@@ -55,6 +55,11 @@ const envSchema = z.object({
 
   // Object storage (MinIO / S3)
   S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
+  // Endpoint used when *signing* URLs the browser will open directly. In Docker
+  // the API reaches MinIO at http://minio:9000 (S3_ENDPOINT), but the browser
+  // can't resolve that host — set this to the host-reachable URL (e.g.
+  // http://localhost:9000) so signed download/preview URLs actually work.
+  S3_PUBLIC_ENDPOINT: z.string().url().optional(),
   S3_REGION: z.string().default('us-east-1'),
   S3_ACCESS_KEY: z.string().default('minioadmin'),
   S3_SECRET_KEY: z.string().default('minioadmin'),
